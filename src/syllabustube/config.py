@@ -36,6 +36,16 @@ class LLMConfig(BaseModel):
     models: dict[str, str] = Field(default_factory=dict)
     temperature: float = Field(default=0.1, ge=0.0, le=2.0)
     timeout: float = Field(default=30.0, gt=0.0)
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_supports_vision: bool = False
+
+
+class IngestConfig(BaseModel):
+    min_chars_per_page: int = Field(default=50, ge=1)
+    max_pages: int = Field(default=50, ge=1)
+    max_chars_per_llm_call: int = Field(default=12000, ge=500)
+    repair_retries: int = Field(default=1, ge=0)
+    vision_ocr: bool = True
 
 
 class DiscoveryConfig(BaseModel):
@@ -98,6 +108,7 @@ class AppConfig(BaseModel):
     """Full application configuration tree with environment overlays."""
 
     llm: LLMConfig = Field(default_factory=LLMConfig)
+    ingest: IngestConfig = Field(default_factory=IngestConfig)
     discovery: DiscoveryConfig = Field(default_factory=DiscoveryConfig)
     enrichment: EnrichmentConfig = Field(default_factory=EnrichmentConfig)
     matching: MatchingConfig = Field(default_factory=MatchingConfig)

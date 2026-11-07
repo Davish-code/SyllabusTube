@@ -29,4 +29,3 @@ def classify_tier(
     if confidence >= thresholds.review:
         return "review"
     return "gap"
-

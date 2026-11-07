@@ -33,4 +33,3 @@ def save_reports(result: PipelineResult, output_dir: str | Path) -> None:
         NotImplementedError: Phase 7 implementation pending.
     """
     raise NotImplementedError("Report export will be implemented in Phase 7.")
-

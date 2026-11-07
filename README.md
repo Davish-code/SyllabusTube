@@ -4,16 +4,20 @@
 
 ## Status
 
-Phase 0 complete. The architecture, configuration schemas, typed domain models, thread-safe SQLite caching, quota tracking, and CLI skeleton are implemented. Subsequent phases implement ingestion, discovery, retrieval, verification, and export.
+Phase 0 (Skeleton & Infrastructure) and Phase 1 (PDF Ingestion & Syllabus Structuring) are complete.
+
+- **Phase 0**: Architecture, configuration schemas, typed domain models, thread-safe SQLite caching, quota tracking, CLI skeleton.
+- **Phase 1**: PyMuPDF extraction, Gemini vision OCR for scanned pages, LLM structuring into Modules/Topics, schema validation & auto-repair, and caching.
 
 ## Bring Your Own Keys (BYO-Keys)
 
 SyllabusTube runs entirely on your infrastructure and uses your own API keys:
-- **Google Gemini API Key**: Used for syllabus structuring, OCR fallback, and topic verification.
+- **Google Gemini API Key**: Used for syllabus structuring, OCR fallback, and topic verification. Set `GEMINI_API_KEY` in `.env`.
 - **YouTube Data API v3 Key**: Used for playlist and video metadata discovery.
 - **Google OAuth Desktop Credentials (`client_secret.json`)**: Required only when exporting curated playlists directly to your YouTube account.
 
-Keys are loaded from `.env` and local credentials files; they are never logged or committed to version control.
+### Privacy & Data Safety
+SyllabusTube processes your files locally. Your syllabus PDF is never uploaded to third-party databases or analytics services; it is transmitted solely to your own configured LLM provider endpoint (Google Gemini or your local Ollama server) for structuring.
 
 ## Installation
 
@@ -35,6 +39,8 @@ source .venv/bin/activate
 pip install -e .
 ```
 
+*Note: No system-level binaries or OCR libraries (such as Tesseract) are required. Scanned or image-only pages are automatically processed via Gemini Vision.*
+
 ## Setup & Verification
 
 1. Copy the example environment file and add your keys:
@@ -49,21 +55,27 @@ pip install -e .
 
 ## Usage
 
+### Phase 1: Ingest & Structure Syllabus
+Extract text from a syllabus PDF, perform OCR on scanned pages, structure modules and topics via LLM, and save JSON:
+
 ```bash
-# Process a course syllabus (CLI entrypoint)
-python main.py path/to/syllabus.pdf
+# Ingest PDF and output structured JSON to output/<stem>.syllabus.json
+python main.py path/to/syllabus.pdf --stage ingest
+
+# Provide explicit subject or university hints
+python main.py path/to/syllabus.pdf --stage ingest --subject "Discrete Mathematics" --university "Stanford"
+
+# Load an existing structured syllabus JSON directly
+python main.py --syllabus-json output/syllabus.syllabus.json
 
 # Run with verbose debug logging
-python main.py path/to/syllabus.pdf --verbose
-
-# Run diagnostics
-python main.py --check-setup
+python main.py path/to/syllabus.pdf --stage ingest --verbose
 ```
 
 ## Roadmap
 
 - [x] **Phase 0**: Architecture, configuration validation, typed domain models, SQLite cache, quota tracking, CLI skeleton
-- [ ] **Phase 1**: PDF text extraction, OCR/vision fallback, and LLM-based syllabus structuring
+- [x] **Phase 1**: PDF text extraction, OCR/vision fallback, and LLM-based syllabus structuring
 - [ ] **Phase 2**: YouTube Data API v3 search planning, candidate discovery, and prefiltering
 - [ ] **Phase 3**: Subtitle fetching, timestamped chapter extraction, and local Whisper fallback
 - [ ] **Phase 4**: Overlapping transcript chunking, dense vector embeddings, and BM25 index
@@ -76,4 +88,3 @@ python main.py --check-setup
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-

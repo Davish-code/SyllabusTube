@@ -14,6 +14,7 @@ if str(SRC_DIR) not in sys.path:
 
 from syllabustube.config import ConfigurationError, get_config, mask_secret
 from syllabustube.exceptions import SyllabusTubeError
+from syllabustube.models import Syllabus
 from syllabustube.pipeline import Pipeline
 from syllabustube.utils.logging import setup_logging
 
@@ -112,6 +113,30 @@ def check_setup(config_path: str | None = None) -> bool:
     return all_passed
 
 
+def print_syllabus_outline(syllabus: Syllabus) -> None:
+    """Print a clean, human-readable outline of the structured syllabus."""
+    print("\n" + "=" * 65)
+    print(f"COURSE: {syllabus.subject}")
+    if syllabus.university:
+        print(f"INSTITUTION: {syllabus.university}")
+    print("=" * 65)
+
+    total_topics = 0
+    for mod in syllabus.modules:
+        print(f"\n[{mod.id.upper()}] Module {mod.number}: {mod.name}")
+        for t in mod.topics:
+            total_topics += 1
+            kw_str = f" (Keywords: {', '.join(t.keywords)})" if t.keywords else ""
+            depth_str = f" [{t.depth}]" if t.depth else ""
+            print(f"  • {t.name}{depth_str}{kw_str}")
+            if t.description:
+                print(f"    Description: {t.description}")
+
+    print("\n" + "-" * 65)
+    print(f"Summary: {len(syllabus.modules)} modules, {total_topics} granular topics structured.")
+    print("-" * 65)
+
+
 def cli() -> None:
     """CLI entry point parsing arguments and executing actions."""
     parser = argparse.ArgumentParser(
@@ -129,6 +154,21 @@ def cli() -> None:
         action="store_true",
         help="Run environment and configuration setup diagnostics.",
     )
+    parser.add_argument(
+        "--stage",
+        choices=["ingest", "all"],
+        default=None,
+        help="Pipeline stage to execute (e.g. 'ingest' to extract & structure PDF).",
+    )
+    parser.add_argument("--subject", default=None, help="Optional manual course subject override.")
+    parser.add_argument(
+        "--university", default=None, help="Optional university/institution name override."
+    )
+    parser.add_argument(
+        "--syllabus-json",
+        default=None,
+        help="Path to an existing structured syllabus JSON to load directly.",
+    )
 
     args = parser.parse_args()
 
@@ -143,19 +183,75 @@ def cli() -> None:
         passed = check_setup(config_path=args.config)
         sys.exit(0 if passed else 1)
 
+    # Direct loading from pre-existing JSON
+    if args.syllabus_json:
+        json_path = Path(args.syllabus_json)
+        if not json_path.exists():
+            print(
+                f"Error: Specified syllabus JSON file does not exist: {json_path}", file=sys.stderr
+            )
+            sys.exit(1)
+        try:
+            content = json_path.read_text(encoding="utf-8")
+            syllabus = Syllabus.model_validate_json(content)
+            print(
+                f"Loaded syllabus '{syllabus.subject}' with {len(syllabus.modules)} modules from {json_path.name}."
+            )
+            print_syllabus_outline(syllabus)
+            sys.exit(0)
+        except Exception as exc:  # noqa: BLE001
+            print(f"Error loading syllabus JSON '{json_path.name}': {exc}", file=sys.stderr)
+            sys.exit(1)
+
     if args.pdf:
-        # User requested to run on a PDF
+        pdf_path = Path(args.pdf)
+        if not pdf_path.exists():
+            print(f"Error: File not found: {args.pdf}", file=sys.stderr)
+            sys.exit(1)
+
+        hints: dict[str, str] = {}
+        if args.subject:
+            hints["subject"] = args.subject
+        if args.university:
+            hints["university"] = args.university
+
+        cfg = get_config(config_path=args.config)
+        pipeline = Pipeline(config=cfg, hints=hints)
+
+        if args.stage == "ingest":
+            try:
+                syllabus = pipeline.ingest(pdf_path)
+
+                # Save JSON to output/
+                out_dir = Path("output")
+                out_dir.mkdir(parents=True, exist_ok=True)
+                out_file = out_dir / f"{pdf_path.stem}.syllabus.json"
+                out_file.write_text(syllabus.model_dump_json(indent=2), encoding="utf-8")
+
+                print_syllabus_outline(syllabus)
+                print(f"Saved syllabus JSON to: {out_file}")
+
+                if pipeline.last_validation_report and pipeline.last_validation_report.warnings:
+                    print("\nValidation Warnings:")
+                    for w in pipeline.last_validation_report.warnings:
+                        print(f"  - [{w.code}] {w.message}")
+
+                sys.exit(0)
+            except SyllabusTubeError as exc:
+                print(f"Error during syllabus ingestion: {exc}", file=sys.stderr)
+                sys.exit(1)
+            except Exception as exc:  # noqa: BLE001
+                print(f"Unexpected error: {exc}", file=sys.stderr)
+                sys.exit(1)
+
+        # Full run (CLI notices for incomplete later stages)
         print(f"SyllabusTube: '{args.pdf}' received.")
         print(
             "Notice: The end-to-end pipeline implementation is currently in progress and not implemented yet."
         )
-        # Attempt to run pipeline to verify exception handling without traceback
         try:
-            cfg = get_config(config_path=args.config)
-            pipeline = Pipeline(config=cfg)
             pipeline.run(args.pdf)
         except SyllabusTubeError:
-            # Clean exit without traceback as requested
             sys.exit(0)
         except Exception:  # noqa: BLE001
             sys.exit(0)

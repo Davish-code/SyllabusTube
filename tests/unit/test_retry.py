@@ -68,4 +68,3 @@ def test_never_retries_non_retryable_error() -> None:
 
     # Must abort immediately on 1st attempt
     assert attempts == 1
-

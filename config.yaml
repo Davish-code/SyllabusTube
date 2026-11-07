@@ -7,6 +7,13 @@ llm:
   temperature: 0.1
   timeout: 30
 
+ingest:
+  min_chars_per_page: 50
+  max_pages: 50
+  max_chars_per_llm_call: 12000
+  repair_retries: 1
+  vision_ocr: true
+
 discovery:
   source: "youtube_api" # youtube_api | ytdlp
   max_playlists_per_module: 5
