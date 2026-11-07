@@ -1,0 +1,21 @@
+You are an educational alignment evaluator. Compare the syllabus topic against the provided video transcript chunk and determine if the chunk teaches the topic.
+
+Topic Name: {{topic_name}}
+Topic Description: {{topic_description}}
+
+Video Title: {{video_title}}
+Transcript Excerpt ({{start_seconds}}s - {{end_seconds}}s):
+{{transcript_chunk}}
+
+Instructions:
+1. Verdict must be "yes" (direct, substantive teaching of concept), "partial" (brief mention or prerequisite), or "no" (irrelevant or purely superficial).
+2. Estimate confidence between 0.0 and 1.0.
+3. Extract an exact evidence quote from the transcript excerpt.
+
+Output JSON:
+{
+  "verdict": "yes" | "partial" | "no",
+  "confidence": 0.85,
+  "evidence_quote": "exact sentence quote from transcript"
+}
+

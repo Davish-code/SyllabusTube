@@ -1,0 +1,24 @@
+{
+  "subject": "Introduction to Linear Algebra",
+  "version": "1.0",
+  "topics": [
+    {
+      "topic_id": "topic_1_1",
+      "topic_name": "Vectors and Linear Combinations",
+      "gold_video_ids": [
+        "fNk_zzaMoSs"
+      ],
+      "acceptable_video_ids": []
+    },
+    {
+      "topic_id": "topic_1_2",
+      "topic_name": "Matrix Multiplication and Linear Transformations",
+      "gold_video_ids": [
+        "k7RM-ot2NWY",
+        "XkY2DOUCWMU"
+      ],
+      "acceptable_video_ids": []
+    }
+  ]
+}
+

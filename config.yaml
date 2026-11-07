@@ -1,0 +1,51 @@
+llm:
+  provider: "gemini" # gemini | ollama
+  model: "gemini-2.5-flash"
+  models:
+    gemini: "gemini-2.5-flash"
+    ollama: "llama3.1"
+  temperature: 0.1
+  timeout: 30
+
+discovery:
+  source: "youtube_api" # youtube_api | ytdlp
+  max_playlists_per_module: 5
+  min_playlist_videos: 3
+  language: "en"
+  max_video_age_years: 5
+
+enrichment:
+  transcript_source: "captions_only" # captions_only | allow_whisper
+  chunk_words: 150
+  chunk_overlap: 30
+
+matching:
+  retrieval_top_k: 10
+  rerank_top_k: 5
+  strictness: 0.7 # 0.0 to 1.0
+  verify_twice: false
+  tier_thresholds:
+    high: 0.8
+    review: 0.5
+
+selection:
+  max_playlists_selected: 3
+  weights:
+    coverage: 0.5
+    focus: 0.2
+    order: 0.15
+    quality: 0.15
+
+export:
+  default_privacy: "unlisted" # unlisted | public | private
+  one_playlist_per_module: false
+
+cache:
+  path: "cache/syllabustube.db"
+  ttl_days: 30
+
+quota:
+  daily_limit: 10000
+  search_cost: 100
+  list_cost: 1
+  insert_cost: 50

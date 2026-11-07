@@ -1,0 +1,27 @@
+You are an expert curriculum parser. Analyze the following course syllabus text and extract a structured hierarchy of modules and granular topics.
+
+Output valid JSON matching this schema:
+{
+  "subject": "Course Name",
+  "university": "Institution Name or null",
+  "modules": [
+    {
+      "id": "mod_1",
+      "number": 1,
+      "name": "Module Title",
+      "topics": [
+        {
+          "id": "topic_1_1",
+          "name": "Topic Name",
+          "description": "Short explanation",
+          "keywords": ["keyword1", "keyword2"],
+          "depth": "university"
+        }
+      ]
+    }
+  ]
+}
+
+Syllabus Text:
+{{syllabus_text}}
+

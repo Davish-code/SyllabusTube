@@ -1,0 +1,5 @@
+python-dotenv==1.2.3
+PyYAML==6.0.3
+pydantic==2.14.2
+pytest==9.2.0
+ruff==0.17.4

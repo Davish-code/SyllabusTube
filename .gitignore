@@ -1,0 +1,26 @@
+# Secrets & credentials
+.env
+token.json
+client_secret.json
+
+# Cache & Local DBs
+cache/
+*.sqlite
+*.db
+
+# Python bytecode & environments
+__pycache__/
+*.pyc
+.venv/
+
+# Testing & Linting
+.pytest_cache/
+.ruff_cache/
+
+# Packaging & Builds
+*.egg-info/
+dist/
+build/
+
+# Operating System
+.DS_Store
